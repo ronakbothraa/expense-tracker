@@ -29,28 +29,29 @@ const ExpenseForm = ({ updateData }: Props) => {
   return (
     <>
       <form onSubmit={handleSubmit((data) => updateData(data))}>
-        <div>
-          <label htmlFor="name">description</label>
+        <div className="mb-3">
+          <label htmlFor="name" className="form-label">description</label>
           <input
-            {...register("category")}
+            className="form-control"
             id="description"
             {...register("description")}
           />
           {errors.description && <p>{errors.description.message}</p>}
         </div>
 
-        <div>
-          <label htmlFor="amount">Amount</label>
+        <div className="mb-3">
+          <label htmlFor="amount" className="form-label">Amount</label>
           <input
-            {...register("amount")}
+          className="form-control"
             id="amount"
             type="number"
             {...register("amount", { valueAsNumber: true })}
           />
           {errors.amount && <p>{errors.amount.message}</p>}
         </div>
-        <div>
-          <select {...register("category")} name="category" id="category">
+        <div  className="mb-3">
+          <label htmlFor="category" className="form-label">Category</label>
+          <select className="form-select" {...register("category")} name="category" id="category">
             <option value="">All Categories</option>
             {categories.map((category) => (
               <option key={category} value={category}>
