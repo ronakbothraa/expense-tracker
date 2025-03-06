@@ -1,61 +1,53 @@
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-
-const schema = z.object({
-  description: z.string().min(10).max(100),
-  amount: z.number().positive(),
-  category: z.string().min(1, "Category is required")
-});
-
-type FormData = z.infer<typeof schema>;
+import { useState } from "react";
+import ExpenseFilter from "./components/ExpenseFilter";
+import ExpenseList from "./components/ExpenseList";
+import ExpenseForm from "./components/ExpenseForm";
+import categories from "./categories";
 
 const App = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(schema),
-  });
+  const [selectedCategory, setSelectedCategory] = useState("");
+
+  const [expenses, setExpenses] = useState([
+    { id: 1, description: "something", amount: 100, category: "food" },
+    { id: 2, description: "anything", amount: 200, category: "food" },
+    { id: 3, description: "nothing", amount: 300, category: "food" },
+    { id: 4, description: "whatever", amount: 400, category: "food" },
+  ]);
+
+  const handleDelete = (id: number) => {
+    setExpenses(expenses.filter((expense) => expense.id !== id));
+  };
+
+  const visibleExpenses = selectedCategory
+    ? expenses.filter((expense) => expense.category === selectedCategory)
+    : expenses;
 
   return (
-    <>
-      <form onSubmit={handleSubmit((data) => console.log(data))}>
-        <div>
-          <label htmlFor="name">description</label>
-          <input id="description" {...register("description")} />
-          {errors.description && <p>{errors.description.message}</p>}
-        </div>
+    <div>
+      <div className="mb-5">
+        <ExpenseForm
+          updateData={(e) => {
+            // Generate a new unique ID (max existing ID + 1)
+            const newId =
+              expenses.length > 0
+                ? Math.max(...expenses.map((expense) => expense.id)) + 1
+                : 1;
 
-        <div>
-          <label htmlFor="amount">Amount</label>
-          <input
-            id="amount"
-            type="number"
-            {...register("amount", { valueAsNumber: true })}
-          />
-          {errors.amount && <p>{errors.amount.message}</p>}
-        </div>
-        <div>
-          <label htmlFor="category">Category</label>
-          <input
-            type="search"
-            id="category"
-            list="category-options"
-            {...register("category")}
-          />
-          <datalist id="category-options">
-            <option value="Groceries" />
-            <option value="Entertainment" />
-            <option value="Bills" />
-            <option value="Transportation" />
-          </datalist>
-          {errors.category && <p>{errors.category.message}</p>}
-        </div>
-        <button type="submit">Submit</button>
-      </form>
-    </>
+            // Add the ID to the expense object before adding to array
+            setExpenses([...expenses, { ...e, id: newId }]);
+          }}
+        />
+      </div>
+      <div className="mb-3">
+        <ExpenseFilter handleSelect={(e) => setSelectedCategory(e)} />
+      </div>
+      <div className="mb-3">
+        <ExpenseList
+          expenses={visibleExpenses}
+          onDelete={(id) => handleDelete(id)}
+        />
+      </div>
+    </div>
   );
 };
 
