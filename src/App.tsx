@@ -1,35 +1,62 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 
-function App() {
-  const [count, setCount] = useState(0)
+const schema = z.object({
+  description: z.string().min(10).max(100),
+  amount: z.number().positive(),
+  category: z.string().min(1, "Category is required")
+});
+
+type FormData = z.infer<typeof schema>;
+
+const App = () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+  });
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+      <form onSubmit={handleSubmit((data) => console.log(data))}>
+        <div>
+          <label htmlFor="name">description</label>
+          <input id="description" {...register("description")} />
+          {errors.description && <p>{errors.description.message}</p>}
+        </div>
 
-export default App
+        <div>
+          <label htmlFor="amount">Amount</label>
+          <input
+            id="amount"
+            type="number"
+            {...register("amount", { valueAsNumber: true })}
+          />
+          {errors.amount && <p>{errors.amount.message}</p>}
+        </div>
+        <div>
+          <label htmlFor="category">Category</label>
+          <input
+            type="search"
+            id="category"
+            list="category-options"
+            {...register("category")}
+          />
+          <datalist id="category-options">
+            <option value="Groceries" />
+            <option value="Entertainment" />
+            <option value="Bills" />
+            <option value="Transportation" />
+          </datalist>
+          {errors.category && <p>{errors.category.message}</p>}
+        </div>
+        <button type="submit">Submit</button>
+      </form>
+    </>
+  );
+};
+
+export default App;
